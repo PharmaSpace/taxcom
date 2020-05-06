@@ -2,7 +2,6 @@ package taxcom
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"strconv"
 	"time"
@@ -185,13 +184,10 @@ func (ofd *taxcom) endDay(t time.Time) time.Time {
 
 func (ofd *taxcom) getOutletList() (outlet []string) {
 	ot := TResultOutlet{}
-	resp, err := ofd.r.R().
+	_, err := ofd.r.R().
 		SetHeader("Session-Token", session.SessionToken).
 		SetResult(&ot).
 		Get("https://api-lk-ofd.taxcom.ru/API/v2/OutletList")
-
-	fmt.Println(resp)
-
 	for _, v := range ot.Records {
 		outlet = append(outlet, v.Id)
 	}
@@ -202,11 +198,10 @@ func (ofd *taxcom) getOutletList() (outlet []string) {
 }
 
 func (ofd *taxcom) getShiftList(fn string, begin time.Time, end time.Time) (shift TResultShift) {
-	resp, err := ofd.r.R().
+	_, err := ofd.r.R().
 		SetHeader("Session-Token", session.SessionToken).
 		SetResult(&shift).
 		Get("https://api-lk-ofd.taxcom.ru/API/v2/ShiftList?fn=" + fn + "&begin=" + begin.Format("2006-01-02T15:04:05") + "&end=" + end.Format("2006-01-02T15:04:05"))
-	fmt.Println(resp)
 	if err != nil {
 		log.Printf("[TaxCom] ShiftList: %s", err.Error())
 	}
@@ -288,12 +283,11 @@ func (ofd *taxcom) getDocuments(kkt string, date time.Time) (documents []Receipt
 		documentList := ofd.getDocumentList(kkt, v.ShiftNumber)
 		for _, dn := range documentList.Records {
 			docs := TDocument{}
-			resp, err := ofd.r.R().
+			_, err := ofd.r.R().
 				SetHeader("Session-Token", session.SessionToken).
 				SetResult(&docs).
 				Get("https://api-lk-ofd.taxcom.ru/API/v2/DocumentInfo?fn=" + kkt + "&fd=" + strconv.Itoa(dn.FdNumber))
 
-			fmt.Println(resp)
 			if err != nil {
 				log.Printf("[TaxCom] DocumentInfo: %s", err.Error())
 			}
