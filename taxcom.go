@@ -1,7 +1,7 @@
 package taxcom
 
 import (
-	"encoding/json"
+	"fmt"
 	"log"
 	"strconv"
 	"time"
@@ -136,10 +136,10 @@ type TDocument struct {
 }
 
 type TProduct struct {
-	Name     string      `json:"1030"`
-	Sum      int         `json:"1043"`
-	Price    int         `json:"1079"`
-	Quantity json.Number `json:"1023"`
+	Name     string `json:"1030"`
+	Sum      int    `json:"1043"`
+	Price    int    `json:"1079"`
+	Quantity string `json:"1023"`
 }
 
 type TaxCom struct {
@@ -283,11 +283,11 @@ func (ofd *taxcom) getDocuments(kkt string, date time.Time) (documents []Receipt
 		documentList := ofd.getDocumentList(kkt, v.ShiftNumber)
 		for _, dn := range documentList.Records {
 			docs := TDocument{}
-			_, err := ofd.r.R().
+			resp, err := ofd.r.R().
 				SetHeader("Session-Token", session.SessionToken).
 				SetResult(&docs).
 				Get("https://api-lk-ofd.taxcom.ru/API/v2/DocumentInfo?fn=" + kkt + "&fd=" + strconv.Itoa(dn.FdNumber))
-
+			fmt.Print(resp)
 			if err != nil {
 				log.Printf("[TaxCom] DocumentInfo: %s", err.Error())
 			}
@@ -302,7 +302,7 @@ func (ofd *taxcom) getDocuments(kkt string, date time.Time) (documents []Receipt
 			doc.Price = docs.Document.TotalSum
 			var products []Product
 			for _, v := range docs.Document.Items {
-				q, _ := strconv.Atoi(v.Quantity.String())
+				q, _ := strconv.Atoi(v.Quantity)
 				product := Product{}
 				product.Name = v.Name
 				product.Quantity = q
