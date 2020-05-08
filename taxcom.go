@@ -1,7 +1,6 @@
 package taxcom
 
 import (
-	"fmt"
 	"log"
 	"strconv"
 	"time"
@@ -283,11 +282,11 @@ func (ofd *taxcom) getDocuments(kkt string, date time.Time) (documents []Receipt
 		documentList := ofd.getDocumentList(kkt, v.ShiftNumber)
 		for _, dn := range documentList.Records {
 			docs := TDocument{}
-			resp, err := ofd.r.R().
+			_, err := ofd.r.R().
 				SetHeader("Session-Token", session.SessionToken).
 				SetResult(&docs).
 				Get("https://api-lk-ofd.taxcom.ru/API/v2/DocumentInfo?fn=" + kkt + "&fd=" + strconv.Itoa(dn.FdNumber))
-			fmt.Print(resp)
+
 			if err != nil {
 				log.Printf("[TaxCom] DocumentInfo: %s", err.Error())
 			}
