@@ -118,7 +118,7 @@ type TDocument struct {
 	Document struct {
 		TransactionDate      string     `json:"1012"`
 		FiscalDriveNumber    string     `json:"1041"`
-		DocumentNumber       int        `json:"1043"`
+		DocumentNumber       int        `json:"1042"`
 		EcashTotalSum        int        `json:"1081"`
 		FiscalDocumentNumber int        `json:"1040"`
 		FP                   string     `json:"1077"`
