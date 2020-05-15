@@ -26,14 +26,15 @@ type KKT struct {
 }
 
 type Receipt struct {
-	ID       int
-	FP       string
-	FD       string
-	Date     string
-	Products []Product
-	Link     string
-	Price    int
-	VatPrice int
+	ID             int
+	FP             string
+	DocumentNumber int
+	FD             string
+	Date           string
+	Products       []Product
+	Link           string
+	Price          int
+	VatPrice       int
 }
 
 type Product struct {
@@ -117,6 +118,7 @@ type TDocument struct {
 	Document struct {
 		TransactionDate      string     `json:"1012"`
 		FiscalDriveNumber    string     `json:"1041"`
+		DocumentNumber       int        `json:"1043"`
 		EcashTotalSum        int        `json:"1081"`
 		FiscalDocumentNumber int        `json:"1040"`
 		FP                   string     `json:"1077"`
@@ -299,6 +301,7 @@ func (ofd *taxcom) getDocuments(kkt string, date time.Time) (documents []Receipt
 			doc := Receipt{}
 			doc.Date = transactionDate.Format(time.RFC3339)
 			doc.FD = strconv.Itoa(docs.Document.FiscalDocumentNumber)
+			doc.DocumentNumber = docs.Document.DocumentNumber
 			doc.FP = docs.Document.FP
 			doc.Price = docs.Document.TotalSum
 			var products []Product
