@@ -9,10 +9,11 @@ import (
 )
 
 type taxcom struct {
-	Login        string
-	Password     string
-	IdIntegrator string
-	r            *resty.Client
+	AgreementNumber string
+	Login           string
+	Password        string
+	IdIntegrator    string
+	r               *resty.Client
 }
 
 type Session struct {
@@ -151,18 +152,19 @@ type TaxCom struct {
 
 var session Session
 
-func Taxcom(login, password, idIntegrator string) *taxcom {
+func Taxcom(login, password, idIntegrator, agreementNumber string) *taxcom {
 	return &taxcom{
-		r:            resty.New(),
-		Login:        login,
-		Password:     password,
-		IdIntegrator: idIntegrator,
+		r:               resty.New(),
+		Login:           login,
+		Password:        password,
+		IdIntegrator:    idIntegrator,
+		AgreementNumber: agreementNumber,
 	}
 }
 
 func (ofd *taxcom) auth() {
 	_, err := ofd.r.R().
-		SetBody(map[string]interface{}{"login": ofd.Login, "password": ofd.Password}).
+		SetBody(map[string]interface{}{"agreementNumber": ofd.AgreementNumber, "login": ofd.Login, "password": ofd.Password}).
 		SetHeader("Integrator-ID", ofd.IdIntegrator).
 		SetResult(&session).
 		Post("https://api-lk-ofd.taxcom.ru/API/v2/Login")
