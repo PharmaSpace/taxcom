@@ -205,7 +205,7 @@ func (ofd *taxcom) endDay(t time.Time) time.Time {
 	return time.Date(year, month, day, 23, 59, 59, 0, t.Location())
 }
 
-func (ofd *taxcom) getAccountList() []string {
+func (ofd *taxcom) GetAccountList() []string {
 	if session.SessionToken == "" {
 		ofd.auth()
 	}
