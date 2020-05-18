@@ -17,7 +17,8 @@ type taxcom struct {
 }
 
 type Session struct {
-	SessionToken string `json:"sessionToken"`
+	AgreementNumber string
+	SessionToken    string `json:"sessionToken"`
 }
 
 type KKT struct {
@@ -61,7 +62,11 @@ type TResultOutlet struct {
 	Counts     TPaginator `json:"counts"`
 	Records    []TOutlet  `json:"records"`
 }
-
+type TResultAccountList struct {
+	ReportDate string         `json:"reportDate"`
+	Counts     TPaginator     `json:"counts"`
+	Records    []TAccountList `json:"records"`
+}
 type TResultKkt struct {
 	ReportDate string     `json:"reportDate"`
 	Counts     TPaginator `json:"counts"`
@@ -78,6 +83,12 @@ type TResultDocumentList struct {
 	ReportDate string          `json:"reportDate"`
 	Counts     TPaginator      `json:"counts"`
 	Records    []TDocumentList `json:"records"`
+}
+
+type TAccountList struct {
+	AgreementNumber string `json:"agreementNumber"`
+	CompanyName     string `json:"companyName"`
+	Inn             string `json:"inn"`
 }
 
 type TShift struct {
@@ -166,11 +177,19 @@ func Taxcom(login, password, idIntegrator, agreementNumber string) *taxcom {
 }
 
 func (ofd *taxcom) auth() {
+	body := make(map[string]interface{})
+	body["login"] = ofd.Login
+	body["password"] = ofd.Password
+	if ofd.AgreementNumber != "" {
+		body["agreementNumber"] = ofd.AgreementNumber
+		session.AgreementNumber = ofd.AgreementNumber
+	}
 	_, err := ofd.r.R().
-		SetBody(map[string]interface{}{"agreementNumber": ofd.AgreementNumber, "login": ofd.Login, "password": ofd.Password}).
+		SetBody(body).
 		SetHeader("Integrator-ID", ofd.IdIntegrator).
 		SetResult(&session).
 		Post("https://api-lk-ofd.taxcom.ru/API/v2/Login")
+
 	if err != nil {
 		log.Printf("[TaxCom] failed auth: %v", err)
 	}
@@ -184,6 +203,25 @@ func (ofd *taxcom) startDay(t time.Time) time.Time {
 func (ofd *taxcom) endDay(t time.Time) time.Time {
 	year, month, day := t.Date()
 	return time.Date(year, month, day, 23, 59, 59, 0, t.Location())
+}
+
+func (ofd *taxcom) getAccountList() []string {
+	if session.SessionToken == "" {
+		ofd.auth()
+	}
+	var agreementNumbers []string
+	ot := TResultAccountList{}
+	_, err := ofd.r.R().
+		SetHeader("Session-Token", session.SessionToken).
+		SetResult(&ot).
+		Get("https://api-lk-ofd.taxcom.ru/API/v2/AccountList")
+	for _, v := range ot.Records {
+		agreementNumbers = append(agreementNumbers, v.AgreementNumber)
+	}
+	if err != nil {
+		log.Printf("[TaxCom] AccountList: %v", err)
+	}
+	return agreementNumbers
 }
 
 func (ofd *taxcom) getOutletList() (outlet []string) {
@@ -264,7 +302,7 @@ func (ofd *taxcom) getKKT() (kkt []KKT, err error) {
 }
 
 func (ofd *taxcom) GetReceipts(date time.Time) (receipts []Receipt, err error) {
-	if session.SessionToken == "" {
+	if session.SessionToken == "" || session.AgreementNumber != ofd.AgreementNumber {
 		ofd.auth()
 	}
 	kkts, err := ofd.getKKT()
