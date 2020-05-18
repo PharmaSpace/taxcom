@@ -29,6 +29,7 @@ type Receipt struct {
 	ID             int
 	FP             string
 	DocumentNumber int
+	KktRegId       string
 	FD             string
 	Date           string
 	Products       []Product
@@ -304,6 +305,7 @@ func (ofd *taxcom) getDocuments(kkt string, date time.Time) (documents []Receipt
 			doc.DocumentNumber = docs.Document.DocumentNumber
 			doc.FP = docs.Document.FP
 			doc.Price = docs.Document.TotalSum
+			doc.KktRegId = docs.Document.KktRegId
 			var products []Product
 			for _, v := range docs.Document.Items {
 				q, _ := strconv.Atoi(v.Quantity)
